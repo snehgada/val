@@ -42,6 +42,7 @@
       background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #fad0c4, #a18cd1);
       background-size: 400% 400%;
       animation: gradientBG 15s ease infinite;
+
     }
 
     @keyframes gradientBG {
@@ -83,17 +84,9 @@
       z-index: 10;
     }
 
-    @keyframes float {
-
-      0%,
-      100% {
-        transform: translateY(0);
-      }
-
-      50% {
-        transform: translateY(-10px);
-      }
-    }
+    /* Re-adding a subtle float via keyframes on a wrapper if needed, 
+       but direct transform is better for tilt. 
+       Let's stick to tilt for now. */
 
     .art {
       width: min(280px, 70vw);
@@ -101,31 +94,33 @@
       display: block;
       filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.1));
       animation: heartbeat 2s infinite;
+      transform: translateZ(50px);
+      /* Pop out in 3D */
     }
 
     @keyframes heartbeat {
       0% {
-        transform: scale(1);
+        transform: scale(1) translateZ(50px);
       }
 
       15% {
-        transform: scale(1.05);
+        transform: scale(1.05) translateZ(50px);
       }
 
       30% {
-        transform: scale(1);
+        transform: scale(1) translateZ(50px);
       }
 
       45% {
-        transform: scale(1.05);
+        transform: scale(1.05) translateZ(50px);
       }
 
       60% {
-        transform: scale(1);
+        transform: scale(1) translateZ(50px);
       }
 
       100% {
-        transform: scale(1);
+        transform: scale(1) translateZ(50px);
       }
     }
 
@@ -134,8 +129,35 @@
       font-size: clamp(3rem, 6vw, 4.5rem);
       color: var(--primary-dark);
       margin: 10px 0 20px;
-      line-height: 1.1;
+      min-height: 1.2em;
+      /* Reserve space for typing */
+      line-height: 1.2;
       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      transform: translateZ(30px);
+    }
+
+    /* CURSOR TRAIL HEARTS */
+    .trail-heart {
+      position: fixed;
+      top: 0;
+      left: 0;
+      font-size: 20px;
+      pointer-events: none;
+      user-select: none;
+      animation: fadeUp 1s forwards;
+      z-index: 9998;
+    }
+
+    @keyframes fadeUp {
+      0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.8;
+      }
+
+      100% {
+        transform: translate(-50%, -150%) scale(0.5);
+        opacity: 0;
+      }
     }
 
     .button-zone {
@@ -144,7 +166,7 @@
       height: 120px;
       margin: 20px auto 0;
       touch-action: none;
-      /* Helps with touch on mobile */
+      transform: translateZ(40px);
     }
 
     button {
@@ -168,7 +190,6 @@
     /* YES BUTTON */
     #yesBtn {
       left: calc(50% - 130px);
-      /* Center-ish left */
       background: linear-gradient(135deg, #ff6b95 0%, #ff4d7d 100%);
       color: white;
       z-index: 2;
@@ -183,9 +204,11 @@
     /* NO BUTTON */
     #noBtn {
       left: calc(50% + 50px);
-      /* Center-ish right */
       background: white;
       color: #333;
+      white-space: nowrap;
+      /* Prevent text wrapping */
+      transition: all 0.2s ease, left 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), top 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     }
 
     .hint {
@@ -195,6 +218,7 @@
       opacity: 0;
       transition: opacity 0.5s ease;
       height: 20px;
+      transform: translateZ(20px);
     }
 
     .hint.visible {
@@ -206,6 +230,7 @@
       display: none;
       margin-top: 20px;
       animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transform: translateZ(40px);
     }
 
     @keyframes popIn {
@@ -244,9 +269,8 @@
 <body>
   <canvas id="confettiCanvas"></canvas>
 
-  <main class="card">
+  <main class="card" id="card">
     <div id="questionView">
-      <!-- CUTE BEAR SVG -->
       <svg class="art" viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="fur" x1="0" x2="1">
@@ -258,38 +282,28 @@
             <stop offset="1" stop-color="#ff1f68" />
           </linearGradient>
         </defs>
-
-        <!-- Heart Balloon -->
         <path d="M250 50 C250 33 270 25 282 38 T314 50 C314 78 282 92 282 106 C282 92 250 78 250 50Z"
           fill="url(#heart)" />
-
-        <!-- Bear Body -->
         <path d="M90 120 C90 70 140 40 190 60 C240 40 290 70 290 120 C290 180 240 210 190 210 C140 210 90 180 90 120Z"
           fill="url(#fur)" />
-
-        <!-- Ears -->
         <path d="M110 92 L95 55 L140 78 Z" fill="#f2a97b" />
         <path d="M270 92 L285 55 L240 78 Z" fill="#f2a97b" />
-
-        <!-- Eyes -->
         <circle cx="160" cy="130" r="7" fill="#4a3b32" />
         <circle cx="220" cy="130" r="7" fill="#4a3b32" />
         <circle cx="162" cy="128" r="2" fill="white" />
         <circle cx="222" cy="128" r="2" fill="white" />
-
-        <!-- Nose/Mouth -->
         <path
           d="M190 144 C186 144 182 148 182 152 C182 160 190 164 190 170 C190 164 198 160 198 152 C198 148 194 144 190 144Z"
           fill="#ff7aa2" />
       </svg>
 
-      <h1>Dhvani, will you be my Valentine?</h1>
+      <h1 id="typewriter"></h1>
 
       <div class="button-zone" id="zone">
         <button id="yesBtn">Yes! 💖</button>
         <button id="noBtn">No</button>
       </div>
-      <div class="hint" id="hint">You can't catch me! 😈</div>
+      <div class="hint" id="hint"></div>
     </div>
 
     <!-- SUCCESS VIEW -->
@@ -307,20 +321,63 @@
     const result = document.getElementById("result");
     const questionView = document.getElementById("questionView");
     const hint = document.getElementById("hint");
+    const card = document.getElementById("card");
 
     // Confetti setup
     const confettiCanvas = document.getElementById("confettiCanvas");
-    let yesScale = 1;
-
-    // Resize canvas
     function resizeConfettiCanvas() {
       confettiCanvas.width = window.innerWidth;
       confettiCanvas.height = window.innerHeight;
     }
     window.addEventListener("resize", resizeConfettiCanvas);
     resizeConfettiCanvas();
-
     const confettiInstance = confetti.create(confettiCanvas, { resize: true, useWorker: true });
+
+    /* ---------- TYPEWRITER EFFECT ---------- */
+    const textToType = "Dhvani, will you be my Valentine?";
+    const typeHeader = document.getElementById("typewriter");
+    let typeIndex = 0;
+
+    function typeWriter() {
+      if (typeIndex < textToType.length) {
+        typeHeader.innerHTML += textToType.charAt(typeIndex);
+        typeIndex++;
+        setTimeout(typeWriter, 70); // Typing speed
+      }
+    }
+
+    // Start typing after a short delay
+    setTimeout(typeWriter, 500);
+
+
+
+    /* ---------- CURSOR TRAIL ---------- */
+    document.addEventListener("mousemove", (e) => {
+      // Throttle creation to avoid too many DOM elements
+      if (Math.random() < 0.8) return;
+
+      const heart = document.createElement("div");
+      heart.classList.add("trail-heart");
+      heart.innerHTML = "❤️";
+      heart.style.left = e.pageX + "px";
+      heart.style.top = e.pageY + "px";
+      document.body.appendChild(heart);
+
+      setTimeout(() => {
+        heart.remove();
+      }, 1000);
+    });
+
+    /* ---------- NO BUTTON LOGIC ---------- */
+    const noTexts = [
+      "No", "Are you sure?", "Really?", "Think again!",
+      "Last chance!", "Surely not?", "You might regret this!",
+      "Give it another thought!", "Are you absolutely certain?",
+      "This could be a mistake!", "Have a heart!", "Don't be so cold!",
+      "Change of heart?", "Wouldn't you reconsider?", "Is that your final answer?",
+      "You're breaking my heart ;(", "Pls? :("
+    ];
+    let noTextIndex = 0;
 
     function clamp(n, min, max) {
       return Math.max(min, Math.min(max, n));
@@ -336,32 +393,31 @@
       const dx = centerX - x;
       const dy = centerY - y;
 
-      // Give it a push in direction of dx/dy
       const dist = Math.hypot(dx, dy) || 1;
-      const pushX = (dx / dist) * 100; // Push distance
-      const pushY = (dy / dist) * 100;
+      const pushX = (dx / dist) * 120;
+      const pushY = (dy / dist) * 120;
 
-      // Current position relative to zone
       let newLeft = (b.left - z.left) + pushX;
       let newTop = (b.top - z.top) + pushY;
 
-      // Keep inside zone
       newLeft = clamp(newLeft, 0, z.width - b.width);
       newTop = clamp(newTop, 0, z.height - b.height);
 
       noBtn.style.left = `${newLeft}px`;
       noBtn.style.top = `${newTop}px`;
-      noBtn.style.transform = "translateY(0)"; // Remove centering transform once moved
+      noBtn.style.transform = "translateY(0)";
 
-      // Show hint
-      if (hint.style.opacity !== '1') {
-        hint.classList.add('visible');
+      // Change text
+      noTextIndex = (noTextIndex + 1) % noTexts.length;
+      noBtn.innerText = noTexts[noTextIndex];
+
+      // Show hint occasionally
+      if (noTextIndex === 3 || noTextIndex === 8) {
+        hint.style.opacity = '1';
+        hint.innerText = "You can't catch me! 😈";
       }
-
-
     }
 
-    // Move "No" button on hover/touch
     zone.addEventListener("mousemove", (e) => {
       const b = noBtn.getBoundingClientRect();
       const dist = Math.hypot(
@@ -371,9 +427,9 @@
       if (dist < 100) moveNo(e.clientX, e.clientY);
     });
 
-    // Handle touch for mobile
+    // Mobile touch
     zone.addEventListener("touchmove", (e) => {
-      e.preventDefault(); // Prevent scrolling
+      e.preventDefault();
       const touch = e.touches[0];
       const b = noBtn.getBoundingClientRect();
       const dist = Math.hypot(
@@ -384,19 +440,19 @@
     }, { passive: false });
 
     noBtn.addEventListener("click", () => {
-      // Just in case they manage to click it
       moveNo(noBtn.getBoundingClientRect().left, noBtn.getBoundingClientRect().top);
     });
 
-    // "Yes" button click
+    /* ---------- YES BUTTON LOGIC ---------- */
     yesBtn.addEventListener("click", () => {
       questionView.style.display = "none";
       result.style.display = "block";
 
-      // Shoot confetti
-      const end = Date.now() + 3000;
+      // Reset tilt
+      card.style.transform = "none";
+      // Remove event listener for tilt? Optional, but keeps it cleaner.
 
-      // Heart shape confetti
+      const end = Date.now() + 3000;
       const heart = confetti.shapeFromText({ text: '❤️', scalar: 3 });
 
       (function frame() {
